@@ -4,27 +4,43 @@ const express = require("express");
 //creating the express app
 const app = express();
 
-//Multiware - sits between req and res , Request handler - which sends res to the req 
-//app.use("/path" , [rh1,rh2,rh3],rh4,rh5) - executes by order - only one res will be send
+//Handling Auth middleware
 
-app.use(
-  "/user",
-  (req, res, next) => {
-    console.log("user Request handler 1");
-    // res.send({ nmae: "Arul", age: 24 });
-    next();
-  },
-  (req, res,next) => {
-    console.log("user Request handler 2");
-    next();
-    res.send({ namee: "Arivu", age: 23 });
-  },
-  (req, res) => {
-    console.log("user Request handler 3");
-    res.send({ name: "gopi", age: 23 });
-  }
-);
+// app.use("/admin/getAllData" , (req,res)=>{
+//     const admin = "Arul";
+//     const isAdmin = admin==="Arul_Murugan";
+//     if(isAdmin)
+//     {
+//         res.status(200).send("user is Authorized as Admin ");
+//     }
+//     else
+//     {
+//         res.status(401).send("User is Unauthorized");
+//     }
+
+// });
+app.use("/admin" , (req,res,next)=>{
+    const admin = "Arul_Murugan";
+    const isAdminAuthorized = admin==="Arul_Murugan";
+    if (!isAdminAuthorized) {
+      res.status(401).send("User is Unauthorized");
+    }
+    else
+    {
+        console.log("Admin is Authorized")
+        next();
+    }
+});
+
+app.use("/admin/getAllData", (req, res)=>{
+    res.send("All User Data fetched");
+});
+
+app.use("/admin/deleteUser",(req,res)=>{
+    res.send("User data is deleted successfully")
+});
+
 
 app.listen(3000 , ()=>{
-    console.log("Server Starts Running");
+    console.log("Server Starts Running...");
 })
