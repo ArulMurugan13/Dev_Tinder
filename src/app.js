@@ -4,19 +4,27 @@ const express = require("express");
 //creating the express app
 const app = express();
 
-// Handling requests to the "/hello" route
-//instead of use - get
-app.use("/hello", (req, res) => {
-  res.send("Hello!!!! Welcome to my project ");
-});
-app.use("/hi", (req, res) => {
-  res.send("Hiiiiiii!!!! Welcome to my project ");
-});
-app.use("/greet", (req, res) => {
-  res.send("Greetings from ARUL !!!! Welcome to my project ");
-});
+//Multiware - sits between req and res , Request handler - which sends res to the req 
+//app.use("/path" , [rh1,rh2,rh3],rh4,rh5) - executes by order - only one res will be send
 
-// Starting the server on port 1313 with a callback function
-app.listen(1313, () => {
-  console.log("Express Server starts...");
-});
+app.use(
+  "/user",
+  (req, res, next) => {
+    console.log("user Request handler 1");
+    // res.send({ nmae: "Arul", age: 24 });
+    next();
+  },
+  (req, res,next) => {
+    console.log("user Request handler 2");
+    next();
+    res.send({ namee: "Arivu", age: 23 });
+  },
+  (req, res) => {
+    console.log("user Request handler 3");
+    res.send({ name: "gopi", age: 23 });
+  }
+);
+
+app.listen(3000 , ()=>{
+    console.log("Server Starts Running");
+})
