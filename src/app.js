@@ -35,12 +35,10 @@ app.use("/admin" , (req,res,next)=>{
 app.use("/admin/getAllData", (req, res)=>{
     res.send("All User Data fetched");
 });
-
+   
 app.use("/admin/deleteUser",(req,res)=>{
     res.send("User data is deleted successfully")
 });
-
-
 app.listen(3000 , ()=>{
     console.log("Server Starts Running...");
 })
