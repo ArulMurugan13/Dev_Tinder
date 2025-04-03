@@ -1,44 +1,46 @@
 //importng express
 const express = require("express");
-
 //creating the express app
 const app = express();
 
-//Handling Auth middleware
+//importing db connction
+const connectDb = require("./config/database.js")
 
-// app.use("/admin/getAllData" , (req,res)=>{
-//     const admin = "Arul";
-//     const isAdmin = admin==="Arul_Murugan";
-//     if(isAdmin)
-//     {
-//         res.status(200).send("user is Authorized as Admin ");
-//     }
-//     else
-//     {
-//         res.status(401).send("User is Unauthorized");
-//     }
+const User = require("./models/users.js");
 
-// });
-app.use("/admin" , (req,res,next)=>{
-    const admin = "Arul_Murugan";
-    const isAdminAuthorized = admin==="Arul_Murugan";
-    if (!isAdminAuthorized) {
-      res.status(401).send("User is Unauthorized");
-    }
-    else
-    {
-        console.log("Admin is Authorized")
-        next();
-    }
+
+//post api
+
+app.post("/signup",async (req,res)=>{
+
+    const newUserObj = new User({fname:"Arivu",lname:"Selvan",age:23,city:"Ariyalur"});
+    
+    await newUserObj.save();
+
+    res.status(200).send("User Added Successfully");
+
+});
+app.get("/getUser",async (req,res)=>{
+    
+    const data = await  User.find();
+    res.status(200).send(data);
+
 });
 
-app.use("/admin/getAllData", (req, res)=>{
-    res.send("All User Data fetched");
+
+connectDb().then( ()=>{
+        console.log("DB is connected successfully");
+        app.listen(3000, () => {
+          console.log("Server Starts Running... listening on port 3000");
+        });
+        
+        }).catch( (err)=>{
+             console.log("Something went wrong db is not cponnected");
 });
-   
-app.use("/admin/deleteUser",(req,res)=>{
-    res.send("User data is deleted successfully")
+
+app.use("/user",(req,res)=>{
+
 });
-app.listen(3000 , ()=>{
-    console.log("Server Starts Running...");
-})
+
+
+
