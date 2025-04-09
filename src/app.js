@@ -5,27 +5,84 @@ const app = express();
 
 //importing db connction
 const connectDb = require("./config/database.js")
-
 const User = require("./models/users.js");
+
+//middleware - no path - runs for all - 
+//helps to convert json to js obj
+app.use(express.json());
 
 
 //post api
-
 app.post("/signup",async (req,res)=>{
+  // {fname:"Arivu",lname:"Selvan",age:23,city:"Ariyalur"}
+  const newUserObj = new User(req.body);
+  await newUserObj.save();
 
-    const newUserObj = new User({fname:"Arivu",lname:"Selvan",age:23,city:"Ariyalur"});
-    
-    await newUserObj.save();
-
-    res.status(200).send("User Added Successfully");
-
+  res.status(200).send("User Added Successfully");
 });
+
+//get all user 
 app.get("/getUser",async (req,res)=>{
     
     const data = await  User.find();
     res.status(200).send(data);
 
 });
+//get  user by fname 
+app.get("/getUserByName",async (req,res)=>{
+    
+    const  name = req.body.fname;
+
+    try{
+       const data = await User.findOne({ fname : name });
+
+       if(data)
+       {
+         res.status(200).send(data);
+       }
+       else
+       {
+        res.status(401).send("Unable to fetch by ", name);
+       }
+    }
+    catch(err)
+    {
+      console.log("Something went wrong")
+      res.status(400).send( err.message)
+    }
+});
+
+//Delete api
+app.delete("/user" ,async (req,res)=>{
+  const userId = req.body.userId;
+  const deleteUser = await User.findByIdAndDelete(userId);
+  res.send("User Deleted Successfully");
+});
+//delete all document
+app.delete("/deleteAllUser" , async (req,res)=>{
+      const deleteAllData = await User.deleteMany({});
+      res.send("All Data are deleted...")
+});
+
+//adding a field
+app.patch("/addEmailField" , async (req,res)=>{
+
+  const addingField = await User.updateMany({},{$set : {email : "abc@gmail.com"}});
+  res.send("Email field added successfully")   
+});
+
+//updating email by id
+
+app.patch("/updateEmail", async (req,res)=>{
+  const userId = req.body.userId;
+  const user = await User.findOne({_id:userId});
+  const username = user?.fname;
+  // updateEmail
+   await User.findByIdAndUpdate(userId , {$set : {email : username+"@gmail.com"}});
+
+  res.send("Email id updated successfully");
+});
+
 
 
 connectDb().then( ()=>{
