@@ -2,26 +2,62 @@
 const express = require("express");
 //creating the express app
 const app = express();
-
 //importing db connction
 const connectDb = require("./config/database.js");
-const User = require("./models/users.js");
+const User = require("./models/user.js");
+const validateSignUpData = require("./utils/validation.js");
+const bcrypt = require("bcrypt");
+const validator = require("validator");
 
 //middleware - no path - runs for all -
 //helps to convert json to js obj
 app.use(express.json());
 
-//post api
+//sign up api
 app.post("/signup", async (req, res) => {
-  // {fname:"Arivu",lname:"Selvan",age:23,city:"Ariyalur"}
-
   try {
-    const newUserObj = new User(req.body);
-    await newUserObj.validate();
-    await newUserObj.save();
+    validateSignUpData(req);
+    const { fname, lname, email, password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({
+      fname,
+      lname,
+      email,
+      password: hashedPassword,
+    });
+    await newUser.save();
     res.status(200).send("User Added Successfully");
   } catch (err) {
-    res.status(400).send(err.message);
+    res.status(400).send("Error :" + err.message);
+  }
+});
+
+//login api
+
+app.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const isValidEmail = validator.isEmail(email);
+    if (!isValidEmail) {
+      throw new Error("Invalid email Id");
+    }
+
+    const existingUser = await User.findOne({ email: email });
+    if (!existingUser) {
+      throw new Error("Invalid Credentials");
+    } else {
+      const isPasswordMatch = await bcrypt.compare(
+        password,
+        existingUser.password
+      );
+      if (isPasswordMatch) {
+        res.send("Login Successful");
+      } else {
+        res.status(400).semd("Invalid Credentials");
+      }
+    }
+  } catch (err) {
+    res.status(400).send("Error :" + err.message);
   }
 });
 
@@ -53,7 +89,7 @@ app.get("/getUser/:userId", async (req, res) => {
   const userId = req.params.userId;
 
   try {
-    const data = await User.findOne({_id:userId});
+    const data = await User.findOne({ _id: userId });
 
     if (data) {
       res.status(200).send(data);
