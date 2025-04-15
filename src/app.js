@@ -8,10 +8,14 @@ const User = require("./models/user.js");
 const validateSignUpData = require("./utils/validation.js");
 const bcrypt = require("bcrypt");
 const validator = require("validator");
+const cookie = require("cookie-parser");
+const cookieParser = require("cookie-parser");
+const jwt  = require("jsonwebtoken")
 
 //middleware - no path - runs for all -
 //helps to convert json to js obj
 app.use(express.json());
+app.use(cookieParser());
 
 //sign up api
 app.post("/signup", async (req, res) => {
@@ -50,7 +54,11 @@ app.post("/login", async (req, res) => {
         password,
         existingUser.password
       );
-      if (isPasswordMatch) {
+      if(isPasswordMatch) {
+        //create jwt token
+        const jwtToken = jwt.sign({_id:existingUser._id} , "Arul@profile123")
+        // parse it in cookie and send
+        res.cookie("token",jwtToken)
         res.send("Login Successful");
       } else {
         res.status(400).semd("Invalid Credentials");
@@ -60,6 +68,30 @@ app.post("/login", async (req, res) => {
     res.status(400).send("Error :" + err.message);
   }
 });
+
+//profile
+
+app.get("/profile" , async(req,res)=>{
+   try {
+     const cookies = req.cookies;
+     const { token } = cookies;
+
+     if (!token) {
+      throw new Error("Invalid Token")
+     }
+
+     const decodedMessage = await jwt.verify(token, "Arul@profile123");
+     const { userId } = decodedMessage;
+     const user = await User.findOne(userId);
+     if (!user) {
+      throw new Error("User Not Exists")
+     }
+     res.send(user);
+   } catch (err) {
+     res.status(400).send("Error :" + err.message);
+   }
+});
+
 
 //get all user
 app.get("/getUser", async (req, res) => {
@@ -90,7 +122,6 @@ app.get("/getUser/:userId", async (req, res) => {
 
   try {
     const data = await User.findOne({ _id: userId });
-
     if (data) {
       res.status(200).send(data);
     } else {
