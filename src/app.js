@@ -10,7 +10,8 @@ const bcrypt = require("bcrypt");
 const validator = require("validator");
 const cookie = require("cookie-parser");
 const cookieParser = require("cookie-parser");
-const jwt  = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
+const userauth = require("./middlewares/userauth.js");
 
 //middleware - no path - runs for all -
 //helps to convert json to js obj
@@ -54,14 +55,15 @@ app.post("/login", async (req, res) => {
         password,
         existingUser.password
       );
-      if(isPasswordMatch) {
+      if (isPasswordMatch) {
         //create jwt token
-        const jwtToken = jwt.sign({_id:existingUser._id} , "Arul@profile123")
+        const jwtToken = jwt.sign({ _id: existingUser._id }, "Arul@profile123");
         // parse it in cookie and send
-        res.cookie("token",jwtToken)
+        res.cookie("token", jwtToken);
+        console.log(jwtToken);
         res.send("Login Successful");
       } else {
-        res.status(400).semd("Invalid Credentials");
+        res.status(400).send("Invalid Credentials");
       }
     }
   } catch (err) {
@@ -70,28 +72,20 @@ app.post("/login", async (req, res) => {
 });
 
 //profile
-
-app.get("/profile" , async(req,res)=>{
-   try {
-     const cookies = req.cookies;
-     const { token } = cookies;
-
-     if (!token) {
-      throw new Error("Invalid Token")
-     }
-
-     const decodedMessage = await jwt.verify(token, "Arul@profile123");
-     const { userId } = decodedMessage;
-     const user = await User.findOne(userId);
-     if (!user) {
-      throw new Error("User Not Exists")
-     }
-     res.send(user);
-   } catch (err) {
-     res.status(400).send("Error :" + err.message);
-   }
+app.get("/profile", userauth , async (req, res) => {
+  try {
+    res.send(req.user);
+  } catch (err) {
+    res.status(400).send("Error :" + err.message);
+  }
 });
 
+//log out
+
+app.post("/logout", async (req, res) => {
+  res.clearCookie("token");
+  res.send("Logout Successfull");
+});
 
 //get all user
 app.get("/getUser", async (req, res) => {
