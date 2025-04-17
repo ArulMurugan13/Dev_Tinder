@@ -11,7 +11,7 @@ const validator = require("validator");
 const cookie = require("cookie-parser");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
-const userauth = require("./middlewares/userauth.js");
+const userAuth = require("./middlewares/auth.js");
 
 //middleware - no path - runs for all -
 //helps to convert json to js obj
@@ -38,7 +38,6 @@ app.post("/signup", async (req, res) => {
 });
 
 //login api
-
 app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -46,21 +45,16 @@ app.post("/login", async (req, res) => {
     if (!isValidEmail) {
       throw new Error("Invalid email Id");
     }
-
     const existingUser = await User.findOne({ email: email });
     if (!existingUser) {
       throw new Error("Invalid Credentials");
     } else {
-      const isPasswordMatch = await bcrypt.compare(
-        password,
-        existingUser.password
-      );
+      const isPasswordMatch = await existingUser.validatePassword(password);
       if (isPasswordMatch) {
         //create jwt token
-        const jwtToken = jwt.sign({ _id: existingUser._id }, "Arul@profile123");
+        const jwtToken = await existingUser.getJwtToken();
         // parse it in cookie and send
-        res.cookie("token", jwtToken);
-        console.log(jwtToken);
+        res.cookie("token", jwtToken , {expires : new Date(Date.now() + 7*24*60*60*1000)});
         res.send("Login Successful");
       } else {
         res.status(400).send("Invalid Credentials");
@@ -72,7 +66,7 @@ app.post("/login", async (req, res) => {
 });
 
 //profile
-app.get("/profile", userauth , async (req, res) => {
+app.get("/profile", userAuth, async (req, res) => {
   try {
     res.send(req.user);
   } catch (err) {
@@ -81,85 +75,14 @@ app.get("/profile", userauth , async (req, res) => {
 });
 
 //log out
-
 app.post("/logout", async (req, res) => {
   res.clearCookie("token");
   res.send("Logout Successfull");
 });
 
-//get all user
-app.get("/getUser", async (req, res) => {
-  const data = await User.find();
-  res.status(200).send(data);
-});
-//get  user by fname
-app.get("/getUserByName", async (req, res) => {
-  const name = req.body.fname;
-
-  try {
-    const data = await User.findOne({ fname: name });
-
-    if (data) {
-      res.status(200).send(data);
-    } else {
-      res.status(401).send("Unable to fetch by ", name);
-    }
-  } catch (err) {
-    console.log("Something went wrong");
-    res.status(400).send(err.message);
-  }
-});
-
-//get user by id from url
-app.get("/getUser/:userId", async (req, res) => {
-  const userId = req.params.userId;
-
-  try {
-    const data = await User.findOne({ _id: userId });
-    if (data) {
-      res.status(200).send(data);
-    } else {
-      res.status(401).send("Unable to fetch by ", name);
-    }
-  } catch (err) {
-    console.log("Something went wrong");
-    res.status(400).send(err.message);
-  }
-});
-
-//Delete api
-app.delete("/user", async (req, res) => {
-  const userId = req.body.userId;
-  const deleteUser = await User.findByIdAndDelete(userId);
-  res.send("User Deleted Successfully");
-});
-//delete all document
-app.delete("/deleteAllUser", async (req, res) => {
-  const deleteAllData = await User.deleteMany({});
-  res.send("All Data are deleted...");
-});
-
-//adding a field
-app.patch("/addEmailField", async (req, res) => {
-  const addingField = await User.updateMany(
-    {},
-    { $set: { email: "abc@gmail.com" } }
-  );
-  res.send("Email field added successfully");
-});
-
-//updating email by id
-
-app.patch("/updateEmail", async (req, res) => {
-  const userId = req.body.userId;
-  const user = await User.findOne({ _id: userId });
-  const username = user?.fname;
-  // updateEmail
-  await User.findByIdAndUpdate(userId, {
-    $set: { email: username + "@gmail.com" },
-  });
-
-  res.send("Email id updated successfully");
+app.post("/sendConnectionRequest", userAuth, async (req, res) => {
+  const user = req.user;
+  res.send(user.fname + " - sent a connection request");
 });
 
 connectDb()
