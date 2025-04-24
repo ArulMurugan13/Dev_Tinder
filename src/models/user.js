@@ -33,6 +33,10 @@ const userSchema = new mongoose.Schema(
         }
       },
     },
+    skills:{type : [String]},
+    about : {type : String},
+    experience : {type : Number},
+    photourl : {type : String}
   },
   { timestamps: true }
 );

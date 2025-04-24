@@ -9,8 +9,12 @@ const validateSignUpData = (req) => {
   } else if (!validator.isStrongPassword(password)) {
     throw new Eroor("Password is weak, Enter Strong Password");
   }
+};
+const validateProfileEditData = (req) => {
+  const allowedEditFields = ["fname","lname","age","city","skills","about","experience"]
 
-  console.log("All validation done");
+   const isEditAllowed = Object.keys(req.body).forEach((key)=> allowedEditFields.includes(key));
+   return isEditAllowed;
 };
 
-module.exports = validateSignUpData;
+module.exports = {validateSignUpData , validateProfileEditData};
