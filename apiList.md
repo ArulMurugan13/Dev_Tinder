@@ -1,11 +1,15 @@
 
 ## Authentication
-    - signup
-    - login
-    - logout
-    - forgot password
+- POST - /signup
+- POST - /login
+- POST - /logout
+- POST - /forgot password
 
 ## Profile
-    - view
-    - edit
-    - edit password
+- GET - /profile/view
+- PATCH - /profile/edit
+- PATCH - /profile/ updatepassword
+
+## connection request
+- POST - /request/send/:status/:userId
+
