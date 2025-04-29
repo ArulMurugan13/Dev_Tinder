@@ -1,4 +1,3 @@
-
 const express = require("express");
 const authRouter = express.Router();
 
@@ -6,8 +5,6 @@ const validateSignUpData = require("../utils/validation");
 const bcrypt = require("bcrypt");
 const validator = require("validator");
 const User = require("../models/user");
-
-
 
 //sign up api
 authRouter.post("/signup", async (req, res) => {
@@ -58,17 +55,14 @@ authRouter.post("/login", async (req, res) => {
   }
 });
 
-
 //log out
 authRouter.post("/logout", async (req, res) => {
   // res.clearCookie("token");
-  res.cookie("token",null,{ expires: new Date(Date.now)});
+  res.cookie("token", null, { expires: new Date(Date.now()) });
   res.send("Logout Successfull");
 });
 
-//forgot password 
-authRouter.patch("/forgotPassword" , async (req,res)=>{
-
-});
+//forgot password
+authRouter.patch("/forgotPassword", async (req, res) => {});
 
 module.exports = authRouter;
