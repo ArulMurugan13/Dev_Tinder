@@ -7,7 +7,7 @@ const validateSignUpData = (req) => {
   } else if (!validator.isEmail(email)) {
     throw new Error("Invalid Email");
   } else if (!validator.isStrongPassword(password)) {
-    throw new Eroor("Password is weak, Enter Strong Password");
+    throw new Error("Password is weak, Enter Strong Password");
   }
 };
 const validateProfileEditData = (req) => {
