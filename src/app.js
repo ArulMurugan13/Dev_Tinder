@@ -5,8 +5,15 @@ const app = express();
 //importing db connction
 const connectDb = require("./config/database.js");
 const cookieParser = require("cookie-parser");
+const cors = require("cors")
 
 //middleware - no path - runs for all -
+app.use(cors(
+  {
+    origin : "http://localhost:5173",
+    credentials:true
+  }
+))
 //helps to convert json to js obj
 app.use(express.json());
 app.use(cookieParser());
