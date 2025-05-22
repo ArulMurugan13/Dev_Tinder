@@ -4,7 +4,7 @@ const ConnectionRequest = require("../models/connectionRequest");
 const User = require("../models/user");
 const userRouter = express.Router();
 
-userRouter.get("/user/request", userAuth, async (req, res) => {
+userRouter.get("/requests", userAuth, async (req, res) => {
   try {
     const loggedinUserId = req.user._id;
     const allRequests = await ConnectionRequest.find({
@@ -18,7 +18,7 @@ userRouter.get("/user/request", userAuth, async (req, res) => {
   }
 });
 
-userRouter.get("/user/connections", userAuth, async (req, res) => {
+userRouter.get("/connections", userAuth, async (req, res) => {
   try {
     const loggedinUserId = req.user._id;
 
@@ -28,8 +28,8 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
         { toUserId: loggedinUserId, status: "accepted" },
       ],
     })
-      .populate("fromUserId", "fname lname")
-      .populate("toUserId", "fname lname");
+      .populate("fromUserId", "fname lname age about photourl")
+      .populate("toUserId", "fname lname age about photourl");
 
     const data = connections.map((row) => {
       const fromId =
@@ -48,7 +48,7 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
   }
 });
 
-userRouter.get("/user/feed", userAuth, async (req, res) => {
+userRouter.get("/feed", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
 
@@ -59,7 +59,6 @@ userRouter.get("/user/feed", userAuth, async (req, res) => {
       $or: [{ fromUserId: loggedInUser._id }, { toUserId: loggedInUser._id }],
     }).select("fromUserId toUserId");
 
-    console.log(existingConnection);
     const connectionSet = new Set();
 
     existingConnection.forEach((row) => {
@@ -67,14 +66,13 @@ userRouter.get("/user/feed", userAuth, async (req, res) => {
       connectionSet.add(row.toUserId.toString());
     });
 
-    console.log(connectionSet);
     const feedData = await User.find({
       $and: [
         { _id: { $nin: Array.from(connectionSet) } },
         { _id: { $ne: loggedInUser._id } },
       ],
     })
-      .select("fname lname photourl")
+      .select("fname lname photourl about")
       .skip(page * limit - limit)
       .limit(limit);
 
@@ -85,4 +83,3 @@ userRouter.get("/user/feed", userAuth, async (req, res) => {
 });
 
 module.exports = userRouter;
-

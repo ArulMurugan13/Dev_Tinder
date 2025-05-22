@@ -33,10 +33,14 @@ const userSchema = new mongoose.Schema(
         }
       },
     },
-    skills:{type : [String]},
-    about : {type : String},
-    experience : {type : Number},
-    photourl : {type : String}
+    skills: { type: [String] },
+    about: { type: String, default: "This is default about the user" },
+    experience: { type: Number },
+    photourl: {
+      type: String,
+      default:
+        "https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG.png",
+    },
   },
   { timestamps: true }
 );
@@ -48,7 +52,6 @@ userSchema.methods.getJwtToken = async function () {
     expiresIn: "7d",
   });
 
-  
   return jwtToken;
 };
 
