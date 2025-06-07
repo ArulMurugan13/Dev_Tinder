@@ -10,7 +10,7 @@ userRouter.get("/requests", userAuth, async (req, res) => {
     const allRequests = await ConnectionRequest.find({
       toUserId: loggedinUserId,
       status: "interested",
-    }).populate("fromUserId", ["fname", "lname"]);
+    }).populate("fromUserId", ["fname", "lname", "age", "photourl"]);
 
     res.json({ message: "Your connection requests", data: allRequests });
   } catch (err) {

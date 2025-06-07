@@ -48,7 +48,7 @@ requestRouter.post(
       });
       await connectionRequest.save();
 
-      res.send("connection request success");
+      res.send({ message:"connection request success"});
     } catch (err) {
       res.status(400).send("Error :" + err.message);
     }
@@ -67,17 +67,19 @@ requestRouter.post(
       const allowedStatus = ["accepted", "rejected"];
 
       if (!allowedStatus.includes(status)) {
-        throw new Error(status + " - Invalid status");
+        return res
+          .status(400)
+          .json({ message: status + " is not a valid status" });
       }
 
       const connectionRequest = await ConnectionRequest.findOne({
-        _id: requestId,
+        fromUserId: requestId,
         toUserId: loggedinUserId,
         status: "interested",
-      }).populate("fromUserId" , ["fname" , "lname"]);
+      }).populate("fromUserId", ["fname", "lname"]);
 
       if (!connectionRequest) {
-        res.status(404).send({ message: "No such connection request" });
+        return res.status(404).send({ message: "No such connection request" });
       }
 
       connectionRequest.status = status;
