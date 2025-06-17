@@ -18,3 +18,11 @@
 
 - GET -/user/requested
 - GET - /user/connections
+
+## Deployment in AWS
+
+- create an EC2 instance 
+    - select ubuntu - create key pair --> gives a pem file 
+    - connect to instance
+        - chmod 400 "Dev-Tinder-Secret.pem"
+        - ssh -i "Dev-Tinder-Secret.pem" ubuntu@ec2-13-233-58-195.ap-south-1.compute.amazonaws.com
